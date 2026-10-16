@@ -1,0 +1,338 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>라이브 멀티 AI 토론 v4</title>
+<script src="https://js.puter.com/v2/"></script>
+<style>
+.tx h3,.tx h4,.tx h5,.tx h6,.tx h7,.tx h8{margin:.4em 0 .2em;font-size:1em}.tx h3{font-size:1.08em}.tx ul,.tx ol{margin:.2em 0;padding-left:1.4em}.tx hr{border:0;border-top:1px solid #334155;margin:.5em 0}.tx code{background:#0003;padding:0 3px;border-radius:3px}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:#0f172a;color:#e2e8f0}
+header{padding:14px 18px;background:linear-gradient(135deg,#1e3a8a,#0f766e);display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+h1{margin:0;font-size:1.25rem}header p{margin:2px 0 0;font-size:.8rem;opacity:.85}
+#quota{min-width:240px;background:#0b1220aa;border-radius:10px;padding:8px 10px;font-size:.78rem}
+#qbar{height:10px;border-radius:6px;background:#334155;overflow:hidden;margin:4px 0}#qfill{height:100%;width:0;background:#22c55e;transition:width .6s}
+.wrap{max-width:980px;margin:0 auto;padding:12px}label{font-size:.85rem;color:#94a3b8}
+input,select,textarea{width:100%;padding:7px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font:inherit;font-size:.85rem}
+.row{display:grid;grid-template-columns:26px 1fr 1.5fr 1.6fr 1.1fr;gap:6px;align-items:center;margin:4px 0}
+.hdr{font-size:.72rem;color:#64748b}
+.btn{padding:10px 14px;border:0;border-radius:10px;font-weight:700;cursor:pointer;color:#fff;background:#0f766e}.btn.alt{background:#475569}.btn.gold{background:#b45309}.btn:disabled{opacity:.4}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:flex-end}.round{margin:18px 0 8px;font-weight:700;color:#93c5fd;border-left:4px solid #2563eb;padding-left:8px}
+.msg{display:flex;gap:10px;margin:10px 0}.av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex:none}
+.bub{background:#1e293b;border-radius:12px;padding:10px 12px;border-left:4px solid var(--c);line-height:1.55;flex:1;min-width:0}
+.tx{white-space:normal;word-break:break-word}.nm{font-weight:700;font-size:.85rem;color:var(--c)}.md{font-size:.72rem;color:#64748b;font-weight:400}.fb{font-size:.72rem;color:#fbbf24}
+.mod .bub{background:#3b2f0b}.sum .bub{background:#052e2b}.judge .bub{background:#2e1065}
+.sp{margin-top:8px;padding:8px;border-radius:8px;background:#0f172a;border:1px dashed var(--c)}.sp h4{margin:0 0 6px;font-size:.78rem;color:var(--c)}
+.sp img{max-width:100%;border-radius:8px;display:block}
+table{border-collapse:collapse;width:100%;font-size:.8rem}td,th{border:1px solid #334155;padding:4px 6px;text-align:left}th{background:#1e293b}
+.bar{height:14px;background:var(--c);border-radius:3px}
+.aud{margin:6px 0 14px 48px;padding:8px;border-radius:10px;background:#111827;border:1px solid #334155}.aud h4{margin:0 0 6px;font-size:.8rem;color:#f9a8d4}
+.ab{display:inline-flex;gap:6px;align-items:flex-start;background:#1f2937;border-radius:14px;padding:5px 9px;margin:3px;font-size:.78rem;max-width:100%}.ab b{color:#f9a8d4}.ab .sup{font-size:.68rem;color:#94a3b8}
+.amem{display:inline-block;background:#1e293b;border-radius:8px;padding:3px 7px;margin:2px;font-size:.74rem}
+pre.code{background:#020617;padding:8px;border-radius:6px;overflow:auto;font-size:.76rem;white-space:pre}iframe.run{width:100%;height:160px;border:1px solid #334155;border-radius:6px;background:#fff}
+details.think summary{cursor:pointer;color:#a5b4fc;font-size:.78rem}details.think div{font-size:.78rem;color:#94a3b8;white-space:pre-wrap;max-height:300px;overflow:auto}
+.sp a{color:#93c5fd}.small{font-size:.75rem}
+#status{font-size:.85rem;color:#fbbf24;min-height:1.2em}
+</style></head><body>
+<header><div><h1>🎙️ 라이브 멀티 AI 토론 <small>v4</small></h1><p>사회자(나) + 서로 다른 AI 2~15명 + 방청객 · 일반 토론 / ⚔️ 특기 대결 · Puter.js / Pollinations</p></div>
+<div id="quota"><b>🔋 남은 발언 기회</b> <span id="qtxt">확인 전</span><div id="qbar"><div id="qfill"></div></div><span id="qsub" class="hdr">Puter 로그인 후 실제 사용량 API로 표시</span> <a href="#" id="qref" style="color:#93c5fd">새로고침</a></div></header>
+<div class="wrap">
+<label>토론 주제</label><input id="topic" value="한국은 원자력 발전 비중을 늘려야 하는가?">
+<div class="ctrl">
+<div style="flex:1;min-width:220px"><label>엔진</label><select id="engine"><option value="puter">Puter.js (GPT·Claude·Gemini·Grok 등, Puter 로그인 필요)</option><option value="poll">Pollinations (로그인 없음, 단일 모델)</option></select></div>
+<div style="flex:1;min-width:200px"><label>모드</label><select id="mode"><option value="normal">💬 일반 토론</option><option value="special">⚔️ 특기 대결 (토론 + 각자 특기 시연)</option></select></div>
+<div style="width:90px"><label>라운드</label><input id="rounds" type="number" min="1" max="6" value="2"></div>
+<div style="flex:1;min-width:200px"><label>이미지 모델 (Grok 특기용)</label><select id="imgModel"></select></div></div>
+<label>패널 (체크된 인원 참여 · 모델 ID는 목록에서 고르거나 직접 입력)</label>
+<div class="row hdr"><span></span><span>이름</span><span>모델 ID</span><span>역할/관점</span><span>특기 (특기 대결 모드)</span></div>
+<div id="panel"></div>
+<datalist id="modelList"></datalist>
+<div class="sp" style="--c:#f9a8d4;margin:10px 0"><h4>👥 방청객</h4>
+<div class="ctrl" style="margin:4px 0"><label style="display:flex;gap:6px;align-items:center;width:auto"><input type="checkbox" id="audOn" checked style="width:auto"> 방청객 반응 켜기 (라운드당 1회 호출)</label>
+<div style="width:90px"><label>인원 (0~12)</label><input id="audN" type="number" min="0" max="12" value="6"></div>
+<div style="flex:1;min-width:220px"><label>방청객 반응 모델 (저렴한 모델 권장)</label><input id="audModel" list="audModels" value="azure:openai/gpt-5-mini"><datalist id="audModels"><option value="azure:openai/gpt-5-mini"><option value="google:google/gemini-2.5-flash-lite"><option value="google:google/gemini-2.5-flash"><option value="openrouter:openai/gpt-5-mini"></datalist></div>
+<button class="btn alt" id="audGen" type="button">🎲 방청객 다시 뽑기</button></div>
+<div id="audList"></div><div id="poll" style="margin-top:6px"></div></div>
+<div class="ctrl"><button class="btn" id="start">▶ 토론 시작</button><button class="btn alt" id="stop">⏹ 중지</button><button class="btn alt" id="sumBtn">📝 최종 요약</button><button class="btn gold" id="judgeBtn">🏆 심사·채점</button><button class="btn alt" id="chk">🔎 모델 ID 검증</button></div>
+<div id="status"></div><div id="log"></div>
+<div class="ctrl"><input id="inter" style="flex:1" placeholder="사회자 개입: 질문/지시를 입력하면 다음 발언부터 반영됩니다"><button class="btn alt" id="send">개입</button></div>
+</div>
+<script>
+// ===== 모델 카탈로그 (2026-10-14 api.puter.com/puterai/chat/models 목록에서 존재 확인한 ID) =====
+const FAMILY={
+ gpt:["openai:openai/gpt-5.4","azure:openai/gpt-5-mini","azure:openai/gpt-5.4-mini","openai:openai/gpt-4o-mini","openrouter:openai/gpt-4o"],
+ claude:["anthropic:anthropic/claude-sonnet-4-6","anthropic:anthropic/claude-sonnet-5","anthropic:anthropic/claude-haiku-4-5","anthropic:anthropic/claude-opus-4-6","infron:anthropic/claude-sonnet-4.6"],
+ gemini:["google:google/gemini-2.5-flash","google:google/gemini-3.5-flash","google:google/gemini-2.5-pro","infron:google/gemini-2.5-flash"],
+ grok:["x-ai:x-ai/grok-4.5","azure:x-ai/grok-4-1-fast-non-reasoning","openrouter:x-ai/grok-4.3","infron:x-ai/grok-4.3"],
+ deepseek:["deepseek:deepseek/deepseek-v4-pro","deepseek:deepseek/deepseek-flash","infron:deepseek/deepseek-v4-flash","openrouter:deepseek/deepseek-v3.2"],
+ qwen:["alibaba:qwen/qwen3.5-plus","alibaba:qwen/qwen3.6-plus","alibaba:qwen/qwen-plus","infron:qwen/qwen3.5-plus"],
+ llama:["infron:meta-llama/llama-4-maverick","openrouter:meta-llama/llama-4-maverick","openrouter:meta-llama/llama-4-scout"],
+ mistral:["mistralai:mistralai/mistral-large-2512","mistralai:mistralai/mistral-medium-2604","openrouter:mistralai/mistral-large-2512","infron:mistral/mistral-large-4"],
+ // v4 추가 (2026-10-16 실시간 목록에서 존재 확인)
+ sonar:["openrouter:perplexity/sonar","openrouter:perplexity/sonar-pro","openrouter:perplexity/sonar-reasoning-pro"],
+ reason:["openrouter:deepseek/deepseek-r1-0528","infron:deepseek/deepseek-r1","openrouter:openai/o4-mini","infron:qwen/qwen3-235b-a22b-thinking-2507"],
+ coder:["mistralai:mistralai/codestral-2508","openrouter:mistralai/codestral-2508","alibaba:qwen/qwen3-coder-flash","infron:qwen/qwen3-coder"],
+ kimi:["infron:moonshotai/kimi-k2.6","openrouter:moonshotai/kimi-k2.6","infron:moonshotai/kimi-k2.5","openrouter:moonshotai/kimi-k2.5"],
+ cohere:["openrouter:cohere/command-a","infron:cohere/command-a-03-2025","openrouter:cohere/command-r-plus-08-2024"],
+ vision:["alibaba:qwen/qwen3-vl-plus","infron:qwen/qwen3-vl-plus","infron:qwen/qwen3-vl-flash"],
+ tts:["google:google/gemini-2.5-flash-lite","google:google/gemini-2.5-flash","azure:openai/gpt-5-mini"]};
+const IMG_MODELS=["x-ai:x-ai/grok-imagine-image","x-ai:x-ai/grok-imagine-image-2.0","replicate:xai/grok-imagine-image","openai:openai/gpt-image-2","google:google/gemini-3.1-flash-image","replicate:black-forest-labs/flux-schnell"];
+const SPECIALTY={
+ none:{l:"(없음)",p:""},
+ trendimg:{l:"🖼️ 트렌드+이미지",p:'최신 트렌드·여론 감각이 담긴 위트 있는 한 줄 관점을 덧붙이고, 마지막 줄에 반드시 "IMAGE_PROMPT: <당신 주장을 상징하는 그림 묘사, 영어 1문장>"을 쓰세요.'},
+ chart:{l:"📊 데이터 표/차트",p:'주장을 뒷받침하는 수치 비교를 마지막에 ```json 코드블록으로 {"title":"제목","unit":"단위","labels":["항목1","항목2"],"values":[숫자,숫자],"source":"출처/추정 여부"} 형식으로 제시하세요 (3~6개 항목, 추정치는 추정이라고 명시).'},
+ deep:{l:"🧠 심층 반론 분석",p:"가장 강한 반대 논거를 먼저 공정하게 재구성(steelman)한 뒤, 그 전제·근거·함의를 단계별로 검토해 반박하세요. 불확실한 점은 명시하세요."},
+ plan:{l:"📋 요약·실행계획",p:"지금까지 논의를 3줄로 요약하고, 당신 입장에 따른 실행 계획(단계·담당·기한)을 번호 목록으로 제시하세요."},
+ logic:{l:"🔢 단계별 논리/계산",p:"주장을 전제→추론→결론의 번호 매긴 단계로 전개하고, 가능한 곳은 간단한 수식/계산(가정 명시)을 보여주세요."},
+ multi:{l:"🌏 다국어·다관점",p:"한국 외 다른 나라(특히 중국·일본·유럽)의 사례를 비교해 시사점을 제시하세요."},
+ open:{l:"🦙 오픈소스적 대안",p:"기존 패널이 놓친 비주류·창의적 대안을 하나 제안하세요."},
+ search:{l:"🔍 웹검색+출처",p:'실시간 웹 검색으로 찾은 최신 사실·통계를 근거로 드세요. 본문 근거 뒤에 [1],[2] 번호를 달고, 마지막에 "SOURCES:" 줄 다음에 "- [번호] 제목 | URL" 형식으로 출처 2~5개를 나열하세요.'},
+ think:{l:"🧩 추론 과정 공개",p:'답하기 전에 <think> ... </think> 블록 안에 단계별 추론(가정·검토한 대안·결론 도출)을 쓰고, 블록 밖에는 최종 발언만 쓰세요.'},
+ code:{l:"💻 코드 시뮬레이션",p:'주장을 검증하는 작은 시뮬레이션을 순수 JavaScript(외부 라이브러리·DOM·네트워크 없이 console.log로만 출력, 30줄 이내, 가정은 주석으로)로 작성해 마지막에 ```javascript 코드블록으로 붙이고, 예상 결과를 한 문장으로 설명하세요.'},
+ longctx:{l:"📚 장문 맥락 추적",p:'긴 맥락 처리 능력을 활용해, 지금까지 각 패널이 한 주장 중 서로 모순되거나 입장이 바뀐 지점을 찾아 마지막에 "TRACK:" 줄 다음에 "- 패널명: 이전 주장 → 현재 주장 (모순/변화)" 형식으로 2~4개 나열하세요.'},
+ biz:{l:"💼 비즈니스 SWOT",p:'기업·산업 관점의 분석을 마지막에 ```json 코드블록으로 {"S":["강점"],"W":["약점"],"O":["기회"],"T":["위협"]} 형식(각 1~3개, 짧게)으로 제시하세요.'},
+ vision:{l:"👁️ 이미지 판독",p:'토론 중 생성된 이미지가 첨부되어 있으면 그 이미지가 무엇을 표현하는지, 주장의 설득력에 도움이 되는지/오해를 부를 수 있는지 시각적으로 비평하세요. 이미지가 없으면 주제를 한 장의 인포그래픽으로 만든다면 어떤 구성일지 묘사하세요.'},
+ tts:{l:"🔊 음성 낭독",p:'귀로 들었을 때 잘 전달되도록 짧은 문장, 구어체, 리듬감 있는 연설문 형태로 말하세요. 기호·표·목록·마크다운은 쓰지 마세요.'}};
+const P=[
+ ["🟢","GPT · 경제학자","gpt","#22c55e",1,"성장과 비용 효율을 중시하는 경제학자","plan"],
+ ["🟣","Claude · 환경운동가","claude","#a855f7",1,"기후·생태 보호를 최우선으로 하는 환경운동가","deep"],
+ ["🔵","Gemini · 공학자","gemini","#3b82f6",1,"데이터와 기술적 실현 가능성을 따지는 공학자","chart"],
+ ["⚫","Grok · 트렌드 분석가","grok","#e5e7eb",1,"여론·트렌드에 민감하고 거침없는 논평가","trendimg"],
+ ["🐋","DeepSeek · 수리분석가","deepseek","#06b6d4",0,"숫자와 논리로 따지는 분석가","logic"],
+ ["🔴","Qwen · 정책입안자","qwen","#ef4444",0,"현실적 타협안을 찾는 정책입안자","multi"],
+ ["🟠","Llama · 시민대표","llama","#f97316",0,"생활비와 안전을 걱정하는 평범한 시민","open"],
+ ["🟡","Mistral · 유럽 전문가","mistral","#eab308",0,"유럽 에너지 정책 경험을 가진 전문가","multi"],
+ ["🔍","Perplexity · 팩트체커 기자","sonar","#14b8a6",0,"최신 보도와 통계를 출처와 함께 확인하는 탐사 기자","search"],
+ ["🧩","DeepSeek R1 · 철학자","reason","#6366f1",0,"전제와 논리적 일관성을 끝까지 따지는 분석철학자","think"],
+ ["💻","Codestral · 데이터 개발자","coder","#84cc16",0,"모델링과 시뮬레이션으로 주장을 검증하는 개발자","code"],
+ ["🌙","Kimi · 기록관","kimi","#f472b6",0,"토론 전체 흐름을 기억하고 모순을 짚는 기록관","longctx"],
+ ["💼","Cohere · 기업 전략가","cohere","#f59e0b",0,"산업·투자·고용 관점의 기업 전략 컨설턴트","biz"],
+ ["👁️","Qwen-VL · 시각 비평가","vision","#0ea5e9",0,"이미지와 시각 자료의 메시지를 해석하는 미디어 비평가","vision"],
+ ["🔊","Gemini Lite · 라디오 앵커","tts","#fb7185",0,"청취자에게 쉽게 풀어 전달하는 라디오 시사 앵커","tts"]];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+P.forEach((p,i)=>$('panel').insertAdjacentHTML('beforeend',`<div class="row"><input type="checkbox" id="on${i}" ${p[4]?'checked':''}><input id="nm${i}" value="${p[0]} ${p[1]}"><input id="mo${i}" list="modelList" value="${FAMILY[p[2]][0]}"><input id="ro${i}" value="${p[5]}"><select id="sp${i}">${Object.entries(SPECIALTY).map(([k,v])=>`<option value="${k}" ${k===p[6]?'selected':''}>${v.l}</option>`).join('')}</select></div>`));
+IMG_MODELS.forEach(m=>$('imgModel').insertAdjacentHTML('beforeend',`<option>${m}</option>`));
+Object.values(FAMILY).flat().forEach(m=>$('modelList').insertAdjacentHTML('beforeend',`<option value="${m}">`));
+
+// ===== 실시간 모델 목록 (공개 엔드포인트, 로그인 불필요) =====
+let LIVE=null;
+async function loadModels(){if(LIVE)return LIVE;try{const r=await fetch('https://api.puter.com/puterai/chat/models');LIVE=new Set((await r.json()).models);}catch(e){LIVE=null;}return LIVE;}
+loadModels().then(s=>{if(!s)return;const dl=$('modelList');dl.innerHTML='';[...s].filter(m=>/gpt|claude|gemini|grok|deepseek|qwen|llama|mistral|sonar|kimi|moonshot|cohere|codestral|o4-mini|o3/i.test(m)&&!/:batch|embed|image|tts|asr|realtime/i.test(m)).sort().forEach(m=>dl.insertAdjacentHTML('beforeend',`<option value="${m}">`));});
+function familyOf(id){const k=Object.keys(FAMILY).find(f=>FAMILY[f].includes(id));if(k)return k;id=id.toLowerCase();return Object.keys(FAMILY).find(f=>id.includes(f==='gpt'?'gpt':f))||null;}
+async function alternates(id){const f=familyOf(id);const out=[];if(f)out.push(...FAMILY[f]);const live=await loadModels();
+ if(live&&f){const base=id.split('/').pop().replace(/[-.]\d.*$/,'');[...live].filter(m=>m.toLowerCase().includes(base)&&!/:batch|image|embed/.test(m)).slice(0,4).forEach(m=>out.push(m));}
+ return [...new Set(out)].filter(m=>m!==id&&(!live||live.has(m)));}
+$('chk').onclick=async()=>{const live=await loadModels();if(!live){alert('모델 목록을 불러오지 못했습니다');return;}
+ const bad=P.map((_,i)=>$('mo'+i).value).filter(m=>!live.has(m));alert(`실시간 목록 ${live.size}개 중 확인.\n`+(bad.length?'❌ 목록에 없음:\n'+bad.join('\n'):'✅ 패널 모델 ID 모두 존재'));};
+
+// ===== 남은 발언 기회 (puter.auth.getMonthlyUsage) =====
+let lastPct=null,drops=[],lastEst=null;
+async function refreshQuota(){if($('engine').value!=='puter'){$('qtxt').textContent='Pollinations: 공개 한도 정보 없음 (알 수 없음)';$('qfill').style.width='0';$('qsub').textContent='Pollinations는 잔여량 API를 제공하지 않습니다';return;}
+ try{if(!puter.auth.isSignedIn()){$('qtxt').textContent='알 수 없음 (로그인 전)';$('qsub').textContent='첫 발언 시 Puter 로그인 창이 뜹니다';return;}
+  const u=await puter.auth.getMonthlyUsage();const a=u&&u.allowanceInfo;
+  const rem=Number(a&&a.remaining),tot=Number(a&&a.monthUsageAllowance);
+  if(!a||!isFinite(rem)||!(tot>0)){$('qtxt').textContent='알 수 없음';$('qsub').textContent='API 응답에 잔여량 정보가 없음';return;}
+  // 단위(마이크로센트 등)가 공식 문서에 명시되지 않아 금액($)은 표시하지 않고 비율(%)만 사용
+  const pct=Math.max(0,Math.min(100,rem/tot*100));
+  if(lastPct!==null&&lastPct-pct>0.001)drops.push(lastPct-pct);lastPct=pct;
+  $('qfill').style.width=pct+'%';$('qfill').style.background=pct>50?'#22c55e':pct>20?'#eab308':'#ef4444';
+  const avg=drops.length?drops.reduce((x,y)=>x+y,0)/drops.length:0;
+  let est=avg?Math.floor(pct/avg):null;
+  if(est!==null){if(lastEst!==null&&est>lastEst)est=lastEst;lastEst=est;}
+  $('qtxt').textContent=`${pct.toFixed(1)}% 남음`+(est!==null?` · 약 ${est}회 (추정)`:'');
+  $('qsub').textContent=avg?`추정: 호출당 평균 ${avg.toFixed(2)}%p 소모 (${drops.length}회 측정 기준)`:'회수 추정은 호출 후 표시 (추정)';}
+ catch(e){$('qtxt').textContent='알 수 없음';$('qsub').textContent='사용량 조회 실패: '+(e.message||e.error||'');}}
+$('qref').onclick=e=>{e.preventDefault();refreshQuota();};$('engine').onchange=refreshQuota;setTimeout(refreshQuota,1500);
+
+// ===== 마크다운(안전) / 이름 제거 =====
+function mdInline(t){return t.replace(/\*\*([^*\n]+?)\*\*/g,'<b>$1</b>').replace(/__([^_\n]+?)__/g,'<b>$1</b>').replace(/(^|[^*\w])\*([^*\n]+?)\*(?!\*)/g,'$1<i>$2</i>').replace(/`([^`\n]+?)`/g,'<code>$1</code>');}
+function md(src){const L=esc(String(src||'')).replace(/\r/g,'').split('\n');let out=[],list=null;
+ const close=()=>{if(list){out.push(`</${list}>`);list=null;}};
+ for(const raw of L){const l=raw.trim();let m;
+  if(!l){close();out.push('<br>');continue;}
+  if(/^(-{3,}|\*{3,}|_{3,})$/.test(l)){close();out.push('<hr>');continue;}
+  if(m=l.match(/^(#{1,6})\s+(.*)$/)){close();const n=Math.min(6,m[1].length+2);out.push(`<h${n}>${mdInline(m[2])}</h${n}>`);continue;}
+  if(m=l.match(/^[-*•]\s+(.*)$/)){if(list!=='ul'){close();out.push('<ul>');list='ul';}out.push(`<li>${mdInline(m[1])}</li>`);continue;}
+  if(m=l.match(/^\d+[.)]\s+(.*)$/)){if(list!=='ol'){close();out.push('<ol>');list='ol';}out.push(`<li>${mdInline(m[1])}</li>`);continue;}
+  close();out.push(mdInline(l)+'<br>');}
+ close();return out.join('').replace(/(<br>)+$/,'').replace(/^(<br>)+/,'').replace(/(<br>){3,}/g,'<br><br>');}
+function stripSelfName(text,name){const lines=String(text||'').replace(/\r/g,'').split('\n');
+ const toks=String(name||'').replace(/[^\p{L}\p{N}\s]/gu,' ').split(/\s+/).filter(w=>w.length>=2);
+ while(lines.length&&!lines[0].trim())lines.shift();
+ if(lines.length>1||lines.length===1){const f=lines[0]||'',plain=f.replace(/[#*_>`:\-–—·|\[\]()]/g,' ');
+  let rest=plain;toks.forEach(w=>rest=rest.split(w).join(' '));rest=rest.replace(/[\p{Extended_Pictographic}\uFE0F\s]|발언|입장|의견/gu,'');
+  if(f.length<=60&&toks.length&&toks.some(w=>plain.includes(w))&&rest.length<=4&&lines.length>1)lines.shift();
+  else if(toks.length){const re=new RegExp('^\\s*[#>*_\\s]*(?:\\p{Extended_Pictographic}\\uFE0F?\\s*)?\\**\\s*'+toks.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[\\s·:\\-*]*')+'[^\\n]{0,15}?\\**\\s*[:：]\\s*','u');lines[0]=f.replace(re,'');}}
+ return lines.join('\n').trim();}
+function setTx(tx,t){tx.innerHTML=md(t);}
+
+// ===== 메시지/호출 =====
+let transcript=[],stopFlag=false,pending=[],running=false,specialLog={},lastRaw=null,lastImageUrl=null;
+function add(cls,av,name,model,color,text){const d=document.createElement('div');d.className='msg '+cls;d.style.setProperty('--c',color);
+ d.innerHTML=`<div class="av" style="background:${color}33">${av}</div><div class="bub"><div class="nm">${esc(name)} <span class="md">${esc(model)}</span> <span class="fb"></span></div><div class="tx"></div><div class="ex"></div></div>`;
+ d.querySelector('.tx').textContent=text;$('log').appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d;}
+const isNotFound=e=>/not.?found|no such model|unknown model|invalid model|model.*(does not exist|unavailable|not supported)/i.test(e?.message||e?.error?.message||JSON.stringify(e||''));
+const errMsg=e=>e?.message||e?.error?.message||(typeof e==='string'?e:JSON.stringify(e));
+async function rawAsk(model,messages){
+ if($('engine').value==='puter'){const r=await puter.ai.chat(messages,{model});lastRaw=r;
+  const c=r?.message?.content;return typeof c==='string'?c:Array.isArray(c)?c.map(x=>x.text||'').join(''):String(r);}
+ for(let a=0;a<6;a++){const r=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages})});
+  if(r.ok){const j=await r.json();return j.choices[0].message.content;}
+  if(r.status===403)throw new Error('HTTP 403 — Pollinations는 파일을 더블클릭(file://)으로 열어야 동작합니다');
+  if(r.status!==402&&r.status!==429)throw new Error('HTTP '+r.status);
+  $('status').textContent=`무료 한도 대기 중… (${a+1}/6)`;await new Promise(z=>setTimeout(z,10000+a*5000));}
+ throw new Error('무료 사용량 한도 초과 — 잠시 후 다시 시도');}
+// 'not found'면 같은 계열 대체 ID 자동 시도 → {text, used}
+async function ask(model,messages,onFallback){
+ try{return {text:await rawAsk(model,messages),used:model};}
+ catch(e){if($('engine').value!=='puter'||!isNotFound(e))throw e;
+  for(const alt of await alternates(model)){onFallback&&onFallback(alt);
+   try{return {text:await rawAsk(alt,messages),used:alt};}catch(e2){if(!isNotFound(e2))throw e2;}}
+  throw new Error(errMsg(e)+' (같은 계열 대체 모델도 모두 실패)');}
+ finally{refreshQuota();}}
+const T=()=>transcript.map(t=>`[${t.who}] ${t.text}`).join('\n\n');
+
+// ===== 특기 렌더링 =====
+function renderChart(box,j,color){const vals=j.values.map(Number),mx=Math.max(...vals.map(Math.abs),1);
+ box.innerHTML=`<h4>📊 ${esc(j.title||'데이터')} ${j.unit?'('+esc(j.unit)+')':''}</h4><table><tr><th>항목</th><th>값</th><th style="width:50%">차트</th></tr>${j.labels.map((l,k)=>`<tr><td>${esc(l)}</td><td>${esc(vals[k])}</td><td><div class="bar" style="width:${Math.abs(vals[k])/mx*100}%;--c:${color}"></div></td></tr>`).join('')}</table>${j.source?`<div class="md">출처: ${esc(j.source)}</div>`:''}`;}
+async function doSpecial(kind,text,msgEl,color,name){const ex=msgEl.querySelector('.ex');let shown='';
+ if(kind==='chart'){const m=text.match(/```(?:json)?\s*([\s\S]*?)```/);if(m){try{const j=JSON.parse(m[1]);if(Array.isArray(j.labels)&&Array.isArray(j.values)){const b=document.createElement('div');b.className='sp';ex.appendChild(b);renderChart(b,j,color);shown='표/차트 렌더링 성공';return {clean:text.replace(m[0],'').trim(),shown};}}catch(e){}}
+  return {clean:text,shown:'차트 JSON 없음/파싱 실패'};}
+ if(kind==='trendimg'){const m=text.match(/IMAGE_PROMPT:\s*(.+)/i);if(!m)return {clean:text,shown:'이미지 프롬프트 없음'};
+  const clean=text.replace(m[0],'').trim();const b=document.createElement('div');b.className='sp';b.innerHTML=`<h4>🖼️ 이미지 생성 중… <span class="md">${esc(m[1])}</span></h4>`;ex.appendChild(b);
+  if($('engine').value==='poll'){const img=new Image();img.src='https://image.pollinations.ai/prompt/'+encodeURIComponent(m[1])+'?width=640&height=384&nologo=true';b.querySelector('h4').textContent='🖼️ '+m[1]+' (pollinations)';b.appendChild(img);lastImageUrl=img.src;return {clean,shown:'이미지 생성'};}
+  const tries=[$('imgModel').value,...IMG_MODELS.filter(x=>x!==$('imgModel').value)].slice(0,3);
+  for(const im of tries){try{const img=await puter.ai.txt2img(m[1],{model:im});b.querySelector('h4').innerHTML=`🖼️ ${esc(m[1])} <span class="md">${esc(im)}</span>`;b.appendChild(img);lastImageUrl=img.src;refreshQuota();return {clean,shown:'이미지 생성 성공 ('+im+')'};}
+   catch(e){b.querySelector('h4').innerHTML=`🖼️ ${esc(im)} 실패: ${esc(errMsg(e))} — 다음 모델 시도`;}}
+  refreshQuota();return {clean,shown:'이미지 생성 실패'};}
+ const box=(h)=>{const b=document.createElement('div');b.className='sp';b.innerHTML=h;ex.appendChild(b);return b;};
+ if(kind==='think'){const m=text.match(/<think>([\s\S]*?)<\/think>/i);const rs=m?m[1]:(lastRaw?.message?.reasoning||lastRaw?.message?.reasoning_content||'');
+  const clean=text.replace(/<think>[\s\S]*?(<\/think>|$)/i,'').trim();
+  if(!String(rs).trim())return {clean,shown:'추론 과정 미제공'};
+  box(`<details class="think"><summary>🧩 생각 과정 보기 (${String(rs).length}자)</summary><div>${esc(String(rs).trim())}</div></details>`);return {clean,shown:'추론 과정 공개'};}
+ if(kind==='search'){let clean=text,srcs=[];const m=text.match(/SOURCES?:\s*([\s\S]*)$/i);
+  if(m){clean=text.slice(0,m.index).trim();m[1].split('\n').forEach(l=>{const u=l.match(/https?:\/\/[^\s)>\]]+/);if(u)srcs.push({t:l.replace(u[0],'').replace(/^[\s\-*•|]+|[\s|:]+$/g,'')||u[0],u:u[0]});});}
+  const c=lastRaw?.citations||lastRaw?.message?.citations||(lastRaw?.message?.annotations||[]).map(a=>a.url_citation?.url||a.url).filter(Boolean);
+  if(Array.isArray(c))c.forEach((u,k)=>{const url=typeof u==='string'?u:u?.url;if(url&&!srcs.some(s=>s.u===url))srcs.push({t:`[${k+1}] `+(u.title||url),u:url});});
+  if(!srcs.length)return {clean:text,shown:'출처 없음'};
+  box(`<h4>🔍 출처 (${srcs.length})</h4><ol class="small">${srcs.map(s=>`<li><a href="${esc(s.u)}" target="_blank" rel="noopener noreferrer">${esc(s.t)}</a></li>`).join('')}</ol>`);return {clean,shown:`출처 ${srcs.length}개 제시`};}
+ if(kind==='code'){const m=text.match(/```(?:javascript|js)?\s*([\s\S]*?)```/i);if(!m)return {clean:text,shown:'코드 없음'};const code=m[1];
+  const b=box(`<h4>💻 시뮬레이션 코드 <button class="btn alt" style="padding:3px 8px;font-size:.72rem">▶ 샌드박스 실행</button></h4><pre class="code">${esc(code)}</pre>`);
+  b.querySelector('button').onclick=()=>{const f=document.createElement('iframe');f.className='run';f.setAttribute('sandbox','allow-scripts');
+   f.srcdoc=`<pre id=o style="font-size:12px;white-space:pre-wrap"></pre><script>const o=document.getElementById('o');const w=(...a)=>o.textContent+=a.map(x=>typeof x==='object'?JSON.stringify(x):x).join(' ')+'\\n';console.log=w;console.error=w;try{${code.replace(/<\/script/gi,'<\\/script')}}catch(e){w('오류: '+e.message)}<\/script>`;
+   b.querySelector('iframe')?.remove();b.appendChild(f);};
+  return {clean:text.replace(m[0],'').trim(),shown:'시뮬레이션 코드 작성'};}
+ if(kind==='longctx'){const m=text.match(/TRACK:\s*([\s\S]*)$/i);if(!m)return {clean:text,shown:'맥락 추적 없음'};
+  const items=m[1].split('\n').map(l=>l.replace(/^[\s\-*•]+/,'').trim()).filter(Boolean);
+  box(`<h4>📚 모순·입장 변화 추적</h4><ul class="small">${items.map(i=>`<li>${mdInline(esc(i))}</li>`).join('')}</ul>`);return {clean:text.slice(0,m.index).trim(),shown:`모순/변화 ${items.length}건 추적`};}
+ if(kind==='biz'){const m=text.match(/```(?:json)?\s*([\s\S]*?)```/);if(m){try{const j=JSON.parse(m[1]);const cell=(k,t,c)=>`<td style="vertical-align:top;background:${c}22"><b>${t}</b><ul class="small">${(j[k]||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></td>`;
+  box(`<h4>💼 SWOT</h4><table><tr>${cell('S','강점 S','#22c55e')}${cell('W','약점 W','#ef4444')}</tr><tr>${cell('O','기회 O','#3b82f6')}${cell('T','위협 T','#f59e0b')}</tr></table>`);return {clean:text.replace(m[0],'').trim(),shown:'SWOT 표 작성'};}catch(e){}}
+  return {clean:text,shown:'SWOT JSON 없음/파싱 실패'};}
+ if(kind==='vision'){if(lastImageUrl)box(`<h4>👁️ 판독한 이미지</h4><img src="${esc(lastImageUrl)}" style="max-height:140px">`);return {clean:text,shown:lastImageUrl?'이미지 판독':'이미지 없음 → 인포그래픽 구상'};}
+ if(kind==='tts'){const b=box(`<h4>🔊 음성 낭독 <button class="btn alt" style="padding:3px 8px;font-size:.72rem">▶ 재생</button> <span class="md"></span></h4>`);const st=b.querySelector('.md');
+  b.querySelector('button').onclick=async()=>{const say=text.replace(/[#*_`>|]/g,'').slice(0,2800);
+   try{if($('engine').value!=='puter'||!puter.ai.txt2speech)throw new Error('no puter tts');st.textContent='Puter TTS 생성 중…';const a=await puter.ai.txt2speech(say,{language:'ko-KR'});a.play();st.textContent='Puter txt2speech 재생 중';refreshQuota();}
+   catch(e){if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(say);u.lang='ko-KR';speechSynthesis.speak(u);st.textContent='브라우저 음성(대체)로 재생 중';}else st.textContent='음성 재생 불가: '+errMsg(e);}};
+  return {clean:text,shown:'음성 낭독 버튼 제공'};}
+ return {clean:text,shown:SPECIALTY[kind]?.l||''};}
+
+async function speak(i,round,total){const name=$('nm'+i).value;let model=$('mo'+i).value,role=$('ro'+i).value,color=P[i][3];
+ const sk=$('mode').value==='special'?$('sp'+i).value:'none',spec=SPECIALTY[sk]||SPECIALTY.none;
+ const sys=`당신은 토론 패널 "${name}"(${role})입니다. 반드시 한국어로, 4~6문장으로 답하세요. 앞선 발언자의 주장을 이름을 들어 구체적으로 반박하거나 보완하고, 자기 관점의 근거를 제시하세요. 사회자의 지시가 있으면 우선 따르세요. 발언 맨 앞에 자신의 이름·역할·이모지나 제목(예: "# ○○ 발언")을 쓰지 말고 바로 본론으로 시작하세요. 다른 패널의 이모지를 사용하지 마세요.`+(spec.p?`\n\n[특기 대결] 당신의 특기는 "${spec.l}"입니다. 토론 발언에 더해 다음을 수행해 특기를 뽐내세요: ${spec.p}`:'');
+ const user=`토론 주제: ${$('topic').value}\n현재 ${round}/${total} 라운드.\n\n지금까지의 대화:\n${T()||'(첫 발언입니다. 입장을 밝히세요.)'}\n\n이제 "${name}"로서 발언하세요.`;
+ if($('engine').value==='poll')model='pollinations · openai';
+ const el=add('',name.split(' ')[0],name,model+(sk!=='none'?' · '+spec.l:''),color,'… 생각 중');const tx=el.querySelector('.tx');
+ const uc=(sk==='vision'&&lastImageUrl&&$('engine').value==='puter'&&!lastImageUrl.startsWith('blob:'))?[{type:'text',text:user+'\n\n(첨부: 토론 중 생성된 이미지)'},{type:'image_url',image_url:{url:lastImageUrl}}]:user;
+ try{const r=await ask(model,[{role:'system',content:sys},{role:'user',content:uc}],alt=>{el.querySelector('.fb').textContent=`↪ '${model}' 없음 → ${alt} 시도 중`;});
+  if(r.used!==model){el.querySelector('.fb').textContent=`↪ '${model}' 없음 → 대체 모델 ${r.used} 사용`;$('mo'+i).value=r.used;}
+  let a=stripSelfName(r.text.trim(),name);if(sk==='none')a=a.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();setTx(tx,a);
+  if(sk!=='none'){const s=await doSpecial(sk,a,el,color,name);a=s.clean;setTx(tx,a);(specialLog[name]=specialLog[name]||[]).push(`R${round} ${spec.l}: ${s.shown}`);}
+  transcript.push({who:name,text:a});}
+ catch(e){tx.textContent='⚠️ 오류: '+errMsg(e)+' (모델 ID 확인 또는 엔진 변경)';}}
+function flushInter(){while(pending.length){const t=pending.shift();transcript.push({who:'사회자',text:t});add('mod','🎙️','사회자','',"#fbbf24",t);}}
+$('send').onclick=()=>{const v=$('inter').value.trim();if(!v)return;pending.push(v);$('inter').value='';if(!running)flushInter();};
+$('inter').onkeydown=e=>{if(e.key==='Enter')$('send').click();};
+$('start').onclick=async()=>{const ids=P.map((_,i)=>i).filter(i=>$('on'+i).checked);if(ids.length<2){alert('2명 이상 선택');return;}
+ running=true;stopFlag=false;$('start').disabled=true;transcript=[];specialLog={};lastImageUrl=null;audHist=[];$('log').innerHTML='';renderPoll();
+ const head=($('mode').value==='special'?'⚔️ 특기 대결 · ':'')+'주제: '+$('topic').value;
+ add('mod','🎙️','사회자','',"#fbbf24",head);transcript.push({who:'사회자',text:head});
+ const N=+$('rounds').value||2;
+ for(let r=1;r<=N&&!stopFlag;r++){$('log').insertAdjacentHTML('beforeend',`<div class="round">라운드 ${r}</div>`);
+  for(const i of ids){if(stopFlag)break;flushInter();$('status').textContent=`라운드 ${r} · ${$('nm'+i).value} 발언 중…`;await speak(i,r,N);}
+  if(!stopFlag)await audienceReact(r,ids.map(i=>$('nm'+i).value));}
+ flushInter();running=false;$('start').disabled=false;$('status').textContent=stopFlag?'중지됨':'토론 종료 — 📝 최종 요약 / 🏆 심사·채점을 눌러보세요';};
+$('stop').onclick=()=>{stopFlag=true;};
+const firstModel=()=>{const i=P.findIndex((_,k)=>$('on'+k).checked);return $('mo'+(i<0?0:i)).value;};
+$('sumBtn').onclick=async()=>{if(!transcript.length)return;const model=firstModel();
+ $('status').textContent='요약 작성 중…';const el=add('sum','📝','최종 요약',model,'#14b8a6','… 작성 중');const tx=el.querySelector('.tx');
+ try{const r=await ask(model,[{role:'system',content:'당신은 중립적인 토론 서기입니다. 한국어로 답하세요.'},{role:'user',content:`주제: ${$('topic').value}\n\n토론 기록:\n${T()}\n\n방청객 여론 추이(시스템 집계):\n${audSummary()}\n\n다음 형식으로 정리하세요:\n1. 합의점\n2. 쟁점(누가 어떤 입장인지)\n3. 방청객 여론 변화(누구 지지가 늘고 줄었는지, 이유 추정)\n4. 실행 제안(구체적 3~5개)\n\n정리만 하고 끝내세요. '원하시면 ~해드릴 수 있습니다' 같은 추가 제안·질문·인사말은 쓰지 마세요.`}]);setTx(tx,r.text.trim());if(r.used!==model)el.querySelector('.fb').textContent='↪ 대체 모델 '+r.used;}
+ catch(e){tx.textContent='⚠️ 오류: '+errMsg(e);}$('status').textContent='';};
+$('judgeBtn').onclick=async()=>{if(!transcript.length)return;const model=firstModel();const names=P.map((_,i)=>i).filter(i=>$('on'+i).checked).map(i=>$('nm'+i).value);
+ $('status').textContent='심사 중…';const el=add('judge','🏆','심사위원 (사회자 AI)',model,'#c084fc','… 채점 중');const tx=el.querySelector('.tx');
+ const sp=Object.entries(specialLog).map(([k,v])=>`${k}: ${v.join(' / ')}`).join('\n')||'(특기 대결 모드 아님)';
+ try{const r=await ask(model,[{role:'system',content:'당신은 공정한 토론 심사위원입니다. 한국어로 답하세요.'},{role:'user',content:`주제: ${$('topic').value}\n참가자: ${names.join(', ')}\n\n토론 기록:\n${T()}\n\n특기 시연 기록(시스템 집계):\n${sp}\n\n방청객 여론 추이(시스템 집계, 참고만 하고 논증 점수는 독립적으로):\n${audSummary()}\n\n각 참가자를 논증(0~10)과 특기(0~10, 특기 모드가 아니면 0)로 채점하세요. 먼저 \`\`\`json 블록으로 [{"name":"참가자 이름","argument":숫자,"specialty":숫자,"comment":"한줄평"}] 을 쓰고, 그 뒤 총평과 우승자, 그리고 방청객 여론 변화가 심사 결과와 일치/불일치하는지 3~5문장으로 쓰세요. 마지막에 '원하시면 ~' 같은 추가 제안·질문은 쓰지 마세요.`}]);
+  let t=r.text.trim();const m=t.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if(m){try{const arr=JSON.parse(m[1]);t=t.replace(m[0],'').trim();const b=document.createElement('div');b.className='sp';b.style.setProperty('--c','#c084fc');
+   b.innerHTML=`<h4>🏆 채점표</h4><table><tr><th>참가자</th><th>논증</th><th>특기</th><th>합계</th><th>한줄평</th></tr>${arr.sort((x,y)=>(y.argument+y.specialty)-(x.argument+x.specialty)).map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.argument)}</td><td>${esc(s.specialty)}</td><td><b>${(+s.argument||0)+(+s.specialty||0)}</b></td><td>${esc(s.comment||'')}</td></tr>`).join('')}</table>`;el.querySelector('.ex').appendChild(b);}catch(e){}}
+  setTx(tx,t);if(r.used!==model)el.querySelector('.fb').textContent='↪ 대체 모델 '+r.used;}
+ catch(e){tx.textContent='⚠️ 오류: '+errMsg(e);}$('status').textContent='';};
+
+// ===== 방청객 =====
+// AUDLIB-START (순수 함수: 단위 테스트 대상)
+const AUD_POOL={
+ job:[["대학생","미래세대 안전"],["농민","전기요금·농업용수"],["자영업자","운영비와 전기요금"],["에너지기업 직원","일자리"],["어린 자녀 부모","미래세대 안전"],["은퇴자","노후 생활비"],["간호사","건강·안전"],["공무원","정책 실현 가능성"],["스타트업 개발자","기술 혁신"],["어부","해양 환경·생계"],["고등학교 교사","미래 세대 교육"],["택배기사","생활 물가"],["환경단체 활동가","기후위기 대응"],["제조업 공장장","전력 공급 안정"],["주부","전기요금 부담"]],
+ lean:["찬성 성향","반대 성향","중도","무관심했지만 관심 생김","신중론"]};
+function seededRand(seed){let x=seed>>>0||1;return()=>{x^=x<<13;x>>>=0;x^=x>>17;x^=x<<5;x>>>=0;return x/4294967296;};}
+function genAudience(n,seed){const rnd=seededRand(seed||Date.now());const jobs=[...AUD_POOL.job];const out=[];
+ n=Math.max(0,Math.min(12,n|0));
+ for(let i=0;i<n;i++){const j=jobs.splice(Math.floor(rnd()*jobs.length),1)[0]||AUD_POOL.job[i%AUD_POOL.job.length];
+  out.push({id:i+1,job:j[0],criterion:j[1],lean:AUD_POOL.lean[Math.floor(rnd()*AUD_POOL.lean.length)],emoji:["🧑‍🎓","👨‍🌾","🧑‍🍳","👷","👩‍👧","👴","🧑‍⚕️","🧑‍💼","🧑‍💻","🎣","🧑‍🏫","🚚","🌱","🏭","🏠"][AUD_POOL.job.findIndex(x=>x[0]===j[0])]||"🙂"});}
+ return out;}
+// 모델 출력 → [{id,comment,emoji,support}] 정규화. 코드펜스/앞뒤 잡담/후행 콤마/스마트 따옴표/객체 래핑 허용
+function parseAudienceJSON(text,members,panelNames){
+ let t=String(text||'').replace(/\r/g,'');const f=t.match(/```(?:json)?\s*([\s\S]*?)```/i);if(f)t=f[1];
+ t=t.replace(/[\u201C\u201D]/g,'"').replace(/[\u2018\u2019]/g,"'");
+ const a=t.indexOf('['),o=t.indexOf('{');let start=(a>=0&&(o<0||a<o))?a:o;if(start<0)throw new Error('JSON 없음');
+ const open=t[start],close=open==='['?']':'}';let depth=0,inStr=false,esc=false,end=-1;
+ for(let i=start;i<t.length;i++){const c=t[i];if(inStr){if(esc)esc=false;else if(c==='\\')esc=true;else if(c==='"')inStr=false;continue;}
+  if(c==='"')inStr=true;else if(c==='['||c==='{')depth++;else if(c===']'||c==='}'){depth--;if(depth===0){end=i;break;}}}
+ let body=t.slice(start,end<0?t.length:end+1).replace(/,\s*([\]}])/g,'$1');
+ let j;try{j=JSON.parse(body);}catch(e){throw new Error('JSON 파싱 실패: '+e.message);}
+ if(!Array.isArray(j))j=j.audience||j.reactions||j.members||Object.values(j).find(Array.isArray)||[];
+ const norm=s=>String(s||'').replace(/[^\p{L}\p{N}]/gu,'').toLowerCase();
+ const matchPanel=s=>{if(s==null)return null;const n=norm(s);if(!n||/없음|중립|none|undecided|모름/.test(n))return null;
+  return panelNames.find(p=>norm(p)===n)||panelNames.find(p=>norm(p).includes(n)||n.includes(norm(p)))||
+   panelNames.find(p=>String(p).replace(/[^\p{L}\p{N}\s]/gu,' ').split(/[\s·]+/).filter(w=>w.length>=2).some(w=>n.includes(norm(w))))||null;};
+ const out=[];
+ j.forEach((r,k)=>{if(!r||typeof r!=='object')return;let id=+(r.id??r.member??r.no);
+  if(!(id>=1)){const m=members.find(m=>r.job&&String(r.job).includes(m.job));id=m?m.id:k+1;}
+  const mem=members.find(m=>m.id===id);if(!mem||out.some(x=>x.id===id))return;
+  out.push({id,comment:String(r.comment??r.reaction_text??r.text??'').slice(0,160),emoji:String(r.emoji??r.reaction??'💬').slice(0,4),
+   support:matchPanel(r.support??r.supports??r.supported??r.panelist),question:r.question?String(r.question).slice(0,200):null});});
+ if(!out.length)throw new Error('유효한 방청객 반응 없음');return out;}
+function tallySupport(reacts,panelNames){const c=Object.fromEntries(panelNames.map(p=>[p,0]));let und=0;reacts.forEach(r=>{if(r.support&&r.support in c)c[r.support]++;else und++;});return {counts:c,undecided:und};}
+// AUDLIB-END
+let audience=[],audHist=[];
+function renderAudList(){$('audList').innerHTML=audience.length?audience.map(m=>`<span class="amem" title="${esc(m.lean)}">${m.emoji} ${m.id}. ${esc(m.job)} · 기준: ${esc(m.criterion)}</span>`).join(''):'<span class="md">방청객 없음</span>';}
+function regenAud(){audience=genAudience(+$('audN').value,Date.now());renderAudList();}
+$('audGen').onclick=regenAud;$('audN').onchange=regenAud;regenAud();
+function renderPoll(){const el=$('poll');if(!audHist.length){el.innerHTML='<span class="md">📊 지지율 투표: 라운드 후 표시</span>';return;}
+ const last=audHist[audHist.length-1],first=audHist[0],tot=audience.length||1;
+ el.innerHTML=`<h4>📊 방청객 지지 (라운드 ${last.round} 기준, ${tot}명)</h4><table>${Object.entries(last.tally.counts).map(([p,n])=>{const i=P.findIndex((_,k)=>$('nm'+k).value===p);const d=n-(first.tally.counts[p]||0);
+  return `<tr><td style="width:34%">${esc(p)}</td><td><div class="bar" style="width:${n/tot*100}%;min-width:2px;--c:${i>=0?P[i][3]:'#94a3b8'}"></div></td><td style="width:70px">${n}명 ${audHist.length>1&&d?`<span class="md">(${d>0?'+':''}${d})</span>`:''}</td></tr>`;}).join('')}<tr><td>미정</td><td></td><td>${last.tally.undecided}명</td></tr></table>`;}
+function audSummary(){if(!audHist.length)return '(방청객 기능 꺼짐 또는 데이터 없음)';
+ return audHist.map(h=>`R${h.round}: `+Object.entries(h.tally.counts).map(([p,n])=>`${p} ${n}명`).join(', ')+`, 미정 ${h.tally.undecided}명`).join('\n');}
+async function audienceReact(round,panelNames){if(!$('audOn').checked||!audience.length)return;
+ const box=document.createElement('div');box.className='aud';box.innerHTML=`<h4>👥 방청객 반응 · 라운드 ${round} <span class="md">… 생성 중</span></h4>`;$('log').appendChild(box);
+ const prev=audHist.length?audHist[audHist.length-1].reacts.map(r=>`${r.id}번→${r.support||'미정'}`).join(', '):'(첫 라운드)';
+ const roundText=transcript.slice(-Math.max(panelNames.length+2,4)).map(t=>`[${t.who}] ${t.text.slice(0,700)}`).join('\n\n');
+ const prompt=`토론 주제: ${$('topic').value}\n패널(정확히 이 이름 중 하나로 지지 표시): ${panelNames.map(n=>`"${n}"`).join(', ')}\n\n방청객:\n${audience.map(m=>`${m.id}. 입장: ${m.job}, 판단 기준: ${m.criterion}, ${m.lean}`).join('\n')}\n\n직전 라운드 지지: ${prev}\n\n이번 라운드 발언:\n${roundText}\n\n각 방청객이 자기 배경에 맞게 이번 라운드에 보인 반응을 JSON 배열로만 출력하세요(설명 금지). 형식: [{"id":번호,"comment":"한국어 한 문장 30자 내외 구어체","emoji":"이모지1개","support":"패널 이름 또는 \\"미정\\"","question":"(선택, 전체 중 정확히 1명만) 패널에게 던질 질문, 나머지는 null"}]. 설득력 있는 발언이 있으면 지지를 바꿀 수 있습니다.`;
+ try{const model=$('audModel').value.trim()||'azure:openai/gpt-5-mini';
+  const r=await ask(model,[{role:'system',content:'당신은 방청객 반응 시뮬레이터입니다. 유효한 JSON만 출력합니다.'},{role:'user',content:prompt}]);
+  const reacts=parseAudienceJSON(r.text,audience,panelNames);const tally=tallySupport(reacts,panelNames);audHist.push({round,reacts,tally});
+  box.querySelector('h4').innerHTML=`👥 방청객 반응 · 라운드 ${round} <span class="md">${esc(r.used)}</span>`;
+  reacts.forEach(x=>{const m=audience.find(a=>a.id===x.id);box.insertAdjacentHTML('beforeend',`<div class="ab"><span>${esc(x.emoji)}</span><div><b>${m.emoji} ${esc(m.job)} · 기준: ${esc(m.criterion)}</b> ${esc(x.comment)} <span class="sup">→ ${esc(x.support||'미정')}</span></div></div>`);});
+  const q=reacts.find(x=>x.question&&x.question!=='null');
+  if(q){const m=audience.find(a=>a.id===q.id);const d=document.createElement('div');d.className='small';d.style.marginTop='6px';
+   d.innerHTML=`🙋 <b>${esc(m.job)} · 기준: ${esc(m.criterion)}의 질문:</b> ${esc(q.question)} <button class="btn alt" style="padding:3px 8px;font-size:.72rem">↗ 개입란으로 전달</button>`;
+   d.querySelector('button').onclick=()=>{$('inter').value=`[방청객 ${m.job} · 기준: ${m.criterion} 질문] ${q.question}`;$('inter').focus();};box.appendChild(d);}
+  transcript.push({who:'방청객 여론(요약)',text:`R${round} 지지: `+Object.entries(tally.counts).map(([p,n])=>`${p} ${n}명`).join(', ')+`, 미정 ${tally.undecided}명`});
+  renderPoll();}
+ catch(e){box.querySelector('h4').innerHTML=`👥 방청객 반응 · 라운드 ${round} <span class="md">⚠️ ${esc(errMsg(e))}</span>`;}}
+renderPoll();
+</script></body></html>
