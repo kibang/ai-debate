@@ -27,6 +27,8 @@ pre.code{background:#020617;padding:8px;border-radius:6px;overflow:auto;font-siz
 details.think summary{cursor:pointer;color:#a5b4fc;font-size:.78rem}details.think div{font-size:.78rem;color:#94a3b8;white-space:pre-wrap;max-height:300px;overflow:auto}
 .sp a{color:#93c5fd}.small{font-size:.75rem}
 #status{font-size:.85rem;color:#fbbf24;min-height:1.2em}
+#report .card{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:12px;margin:10px 0}#report h3{margin:0 0 8px;color:#fcd34d}#report .win{background:linear-gradient(135deg,#78350f,#1e3a8a);font-size:1.05rem}#report blockquote{margin:4px 0;padding:4px 10px;border-left:3px solid #64748b;color:#cbd5e1;font-size:.82rem}#report svg{max-width:100%;height:auto}.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+@media print{body{background:#fff!important;color:#000!important}body>*:not(#reportSec){display:none!important}.noprint{display:none!important}#report .card{background:#fff;border-color:#999;break-inside:avoid;color:#000}#report blockquote{color:#333}#report h3{color:#000}#report .win{background:#fff4d6}#report td,#report th{border-color:#999;color:#000;background:#fff}#report svg text{fill:#000}}
 </style></head><body>
 <div id="fbBanner" role="status" aria-live="polite" style="display:none;background:#fef3c7;color:#78350f;padding:12px 16px;border-radius:10px;margin:8px;font-size:15px;line-height:1.5"></div><div id="loginOffer" style="display:none;background:#e0f2fe;color:#0c4a6e;padding:12px 16px;border-radius:10px;margin:8px;font-size:15px">Puter 로그인을 하지 않으셨나요? 로그인 없이도 바로 체험할 수 있어요. <button id="noLoginBtn" style="font-size:15px;padding:6px 14px;margin-left:8px;cursor:pointer">로그인 없이 해보기</button></div>
 <header><div><h1>🎙️ 라이브 멀티 AI 토론 <small>v5</small></h1><p>사회자(나) + 서로 다른 AI 2~15명 + 방청객 · 일반 토론 / ⚔️ 특기 대결 · Puter.js / Pollinations</p></div>
@@ -48,7 +50,7 @@ details.think summary{cursor:pointer;color:#a5b4fc;font-size:.78rem}details.thin
 <div style="flex:1;min-width:220px"><label>방청객 반응 모델 (저렴한 모델 권장)</label><input id="audModel" list="audModels" value="azure:openai/gpt-5-mini"><datalist id="audModels"><option value="azure:openai/gpt-5-mini"><option value="google:google/gemini-2.5-flash-lite"><option value="google:google/gemini-2.5-flash"><option value="openrouter:openai/gpt-5-mini"></datalist></div>
 <button class="btn alt" id="audGen" type="button">🎲 방청객 다시 뽑기</button></div>
 <div id="audList"></div><div id="poll" style="margin-top:6px"></div></div>
-<div class="ctrl"><button class="btn" id="start">▶ 토론 시작</button><button class="btn alt" id="stop">⏹ 중지</button><button class="btn alt" id="sumBtn">📝 최종 요약</button><button class="btn gold" id="judgeBtn">🏆 심사·채점</button><button class="btn alt" id="chk">🔎 모델 ID 검증</button></div>
+<div class="ctrl"><button class="btn" id="start">▶ 토론 시작</button><button class="btn alt" id="stop">⏹ 중지</button><button class="btn alt" id="sumBtn">📝 최종 요약</button><button class="btn gold" id="judgeBtn">🏆 심사·채점</button><button class="btn alt" id="chk">🔎 모델 ID 검증</button><button class="btn gold rptBtn" type="button">📊 판정 리포트</button></div>
 <div id="status"></div><div id="log"></div>
 <div class="ctrl"><input id="inter" style="flex:1" placeholder="사회자 개입: 질문/지시를 입력하면 다음 발언부터 반영됩니다"><button class="btn alt" id="send">개입</button></div>
 </div>
@@ -262,7 +264,7 @@ async function speak(i,round,total){const name=$('nm'+i).value;let model=$('mo'+
   if(r.used!==model){el.querySelector('.fb').textContent=`↪ '${model}' 없음 → 대체 모델 ${r.used} 사용`;$('mo'+i).value=r.used;}
   let a=stripSelfName(r.text.trim(),name);if(sk==='none')a=a.replace(/<think>[\s\S]*?<\/think>/gi,'').trim();setTx(tx,a);
   if(sk!=='none'){const s=await doSpecial(sk,a,el,color,name);a=s.clean;setTx(tx,a);(specialLog[name]=specialLog[name]||[]).push(`R${round} ${spec.l}: ${s.shown}`);}
-  transcript.push({who:name,text:a});}
+  transcript.push({who:name,text:a,round});}
  catch(e){tx.textContent='⚠️ 오류: '+errMsg(e)+' (모델 ID 확인 또는 엔진 변경)';}}
 function flushInter(){while(pending.length){const t=pending.shift();transcript.push({who:'사회자',text:t});add('mod','🎙️','사회자','',"#fbbf24",t);}}
 $('send').onclick=()=>{const v=$('inter').value.trim();if(!v)return;pending.push(v);$('inter').value='';if(!running)flushInter();};
@@ -291,6 +293,49 @@ $('judgeBtn').onclick=async()=>{if(!transcript.length)return;const model=firstMo
    b.innerHTML=`<h4>🏆 채점표</h4><table><tr><th>참가자</th><th>논증</th><th>특기</th><th>합계</th><th>한줄평</th></tr>${arr.sort((x,y)=>(y.argument+y.specialty)-(x.argument+x.specialty)).map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.argument)}</td><td>${esc(s.specialty)}</td><td><b>${(+s.argument||0)+(+s.specialty||0)}</b></td><td>${esc(s.comment||'')}</td></tr>`).join('')}</table>`;el.querySelector('.ex').appendChild(b);}catch(e){}}
   setTx(tx,t);if(r.used!==model)el.querySelector('.fb').textContent='↪ 대체 모델 '+r.used;}
  catch(e){tx.textContent='⚠️ 오류: '+errMsg(e);}$('status').textContent='';};
+
+// ===== 📊 판정 리포트 =====
+// RPTLIB-START (순수 함수: 단위 테스트 대상)
+const CRIT=['사실 정확성','논리성','근거','반박력','설득력'];
+function parseJudgeJSON(raw){let t=String(raw||'').replace(/[\u201C\u201D]/g,'"').replace(/[\u2018\u2019]/g,"'");
+ const f=t.match(/```(?:json)?\s*([\s\S]*?)```/i);if(f)t=f[1];
+ const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<a)throw new Error('JSON 없음');t=t.slice(a,b+1).replace(/,\s*([}\]])/g,'$1');
+ const j=JSON.parse(t);const num=v=>{v=Number(v);return isFinite(v)?Math.max(0,Math.min(10,v)):0;};
+ const rounds=(j.rounds||[]).map((r,k)=>({round:Number(r.round)||k+1,scores:(r.scores||[]).map(x=>{const c=x.criteria||x.scores||x;const vals=CRIT.map(n=>num(c[n]));return {name:String(x.name||'?'),criteria:Object.fromEntries(CRIT.map((n,i)=>[n,vals[i]])),total:vals.reduce((p,q)=>p+q,0),evidence:String(x.evidence||x.quote||'').slice(0,300),comment:String(x.comment||'').slice(0,200)};}),best:r.best?String(r.best):null}));
+ return {rounds,winner:j.winner?String(j.winner):null,reason:String(j.reason||j.summary||'')};}
+function aggregate(rep){const agg={};rep.rounds.forEach(r=>r.scores.forEach(s=>{const g=agg[s.name]=agg[s.name]||{name:s.name,sum:0,n:0,crit:Object.fromEntries(CRIT.map(c=>[c,0])),byRound:{}};g.sum+=s.total;g.n++;CRIT.forEach(c=>g.crit[c]+=s.criteria[c]);g.byRound[r.round]=s.total;}));
+ const list=Object.values(agg).map(g=>({...g,avg:g.n?g.sum/g.n:0,crit:Object.fromEntries(CRIT.map(c=>[c,g.n?g.crit[c]/g.n:0]))}));list.sort((x,y)=>y.avg-x.avg);return list;}
+// RPTLIB-END
+const pcol=n=>{const i=P.findIndex((_,k)=>$('nm'+k).value===n);return i>=0?P[i][3]:'#94a3b8';};
+function svgLine(series,xs,maxY,title){const W=520,H=240,L=36,B=28,T=24,Rr=10,x=k=>L+(xs.length<2?0:(W-L-Rr)*k/(xs.length-1)),y=v=>T+(H-T-B)*(1-v/maxY);
+ let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}"><text x="${L}" y="14" fill="#cbd5e1" font-size="12">${esc(title)}</text>`;
+ for(let v=0;v<=maxY;v+=maxY/5)g+=`<line x1="${L}" x2="${W-Rr}" y1="${y(v)}" y2="${y(v)}" stroke="#33415588"/><text x="4" y="${y(v)+4}" fill="#94a3b8" font-size="10">${Math.round(v)}</text>`;
+ xs.forEach((r,k)=>g+=`<text x="${x(k)-8}" y="${H-8}" fill="#94a3b8" font-size="10">R${r}</text>`);
+ series.forEach(s=>{const pts=xs.map((r,k)=>s.vals[r]==null?null:[x(k),y(s.vals[r])]).filter(Boolean);g+=`<polyline fill="none" stroke="${s.color}" stroke-width="2.5" points="${pts.map(p=>p.join(',')).join(' ')}"/>`+pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${s.color}"/>`).join('');});
+ return g+'</svg>'+`<div class="md">${series.map(s=>`<span style="color:${s.color}">■</span> ${esc(s.name)}`).join(' &nbsp; ')}</div>`;}
+function svgRadar(list){const W=320,C=160,Rr=110,n=CRIT.length,pt=(i,v)=>[C+Rr*v/10*Math.sin(2*Math.PI*i/n),C-Rr*v/10*Math.cos(2*Math.PI*i/n)];
+ let g=`<svg viewBox="0 0 ${W} ${W+10}" role="img" aria-label="기준별 레이더">`;[2,4,6,8,10].forEach(v=>g+=`<polygon fill="none" stroke="#33415599" points="${CRIT.map((_,i)=>pt(i,v).join(',')).join(' ')}"/>`);
+ CRIT.forEach((c,i)=>{const [a,b]=pt(i,11.8);g+=`<text x="${a}" y="${b}" fill="#cbd5e1" font-size="11" text-anchor="middle">${c}</text>`;});
+ list.forEach(p=>{const col=pcol(p.name);g+=`<polygon fill="${col}33" stroke="${col}" stroke-width="2" points="${CRIT.map((c,i)=>pt(i,p.crit[c]).join(',')).join(' ')}"/>`;});return g+'</svg>';}
+function critBars(list){return `<table><tr><th>기준</th>${list.map(p=>`<th>${esc(p.name)}</th>`).join('')}</tr>${CRIT.map(c=>`<tr><td>${c}</td>${list.map(p=>`<td><div class="bar" style="width:${p.crit[c]*10}%;--c:${pcol(p.name)}"></div>${p.crit[c].toFixed(1)}</td>`).join('')}</tr>`).join('')}</table>`;}
+function renderReport(rep){const list=aggregate(rep),rs=rep.rounds.map(r=>r.round);const w=rep.winner||list[0]?.name;
+ let h=`<div class="card win"><h3>🏆 승자: ${esc(w||'판정 불가')}</h3><div>${esc(rep.reason)}</div><div class="md">주제: ${esc($('topic').value)} · ${new Date().toLocaleString('ko-KR')}</div></div>`;
+ h+=`<div class="card"><h3>🥇 순위표</h3><table><tr><th>순위</th><th>패널</th><th>평균 총점(/50)</th>${CRIT.map(c=>`<th>${c}</th>`).join('')}</tr>${list.map((p,k)=>`<tr><td>${k+1}</td><td><span style="color:${pcol(p.name)}">■</span> ${esc(p.name)}</td><td><b>${p.avg.toFixed(1)}</b></td>${CRIT.map(c=>`<td>${p.crit[c].toFixed(1)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+ h+=`<div class="grid2"><div class="card"><h3>📈 라운드별 점수</h3>${svgLine(list.map(p=>({name:p.name,color:pcol(p.name),vals:p.byRound})),rs,50,'라운드별 총점 (0~50)')}</div><div class="card"><h3>🕸️ 기준별 레이더 (평균)</h3>${svgRadar(list)}</div></div>`;
+ h+=`<div class="card"><h3>📊 기준별 막대</h3>${critBars(list)}</div>`;
+ if(typeof audHist!=='undefined'&&audHist.length){const names=Object.keys(audHist[audHist.length-1].tally.counts);const ar=audHist.map(a=>a.round);const mx=Math.max(1,...audHist.flatMap(a=>Object.values(a.tally.counts)));
+  h+=`<div class="card"><h3>👥 방청객 지지 추이</h3>${svgLine(names.map(n=>({name:n,color:pcol(n),vals:Object.fromEntries(audHist.map(a=>[a.round,a.tally.counts[n]||0]))})),ar,mx,'라운드별 지지 인원')}</div>`;}
+ h+=`<div class="card"><h3>🔍 라운드별 핵심 근거</h3>${rep.rounds.map(r=>`<h4>라운드 ${r.round}${r.best?' · 우세: '+esc(r.best):''}</h4>${r.scores.map(s=>`<div><b style="color:${pcol(s.name)}">${esc(s.name)}</b> ${s.total}/50 — ${esc(s.comment)}${s.evidence?`<blockquote>“${esc(s.evidence)}”</blockquote>`:''}</div>`).join('')}`).join('')}</div>`;
+ $('report').innerHTML=h;$('reportSec').scrollIntoView({behavior:'smooth'});}
+async function makeReport(){const said=transcript.filter(t=>t.round&&t.who!=='사회자');if(!said.length){$('report').innerHTML='<div class="card">먼저 토론을 진행해 주세요.</div>';$('reportSec').scrollIntoView();return;}
+ const model=firstModel();$('report').innerHTML='<div class="card">📊 판정 중… (심판 AI 1회 호출)</div>';$('reportSec').scrollIntoView({behavior:'smooth'});
+ const byR={};said.forEach(t=>(byR[t.round]=byR[t.round]||[]).push(`[${t.who}] ${t.text}`));
+ const rec=Object.entries(byR).map(([r,a])=>`### 라운드 ${r}\n${a.join('\n\n')}`).join('\n\n');
+ const prompt=`주제: ${$('topic').value}\n\n라운드별 발언 기록:\n${rec}\n\n당신은 공정한 심판입니다. 각 라운드에서 실제로 한 말만 근거로 각 패널을 기준별 0~10점으로 채점하세요. 기준: ${CRIT.join(', ')}. evidence에는 해당 라운드 발언에서 그대로 인용한 핵심 문장(60자 이내)을 넣으세요. 기록 밖 지식으로 가산하지 마세요(사실 정확성 판단은 예외). 오직 JSON만 출력:\n{"rounds":[{"round":1,"best":"이름","scores":[{"name":"이름","criteria":{${CRIT.map(c=>`"${c}":0`).join(',')}},"evidence":"인용","comment":"한줄평"}]}],"winner":"이름","reason":"종합 판정 이유 2~3문장"}`;
+ try{const r=await ask(model,[{role:'system',content:'당신은 엄격하고 공정한 토론 심판입니다. 한국어로, JSON만 출력합니다.'},{role:'user',content:prompt}]);renderReport(parseJudgeJSON(r.text));}
+ catch(e){$('report').innerHTML='<div class="card">⚠️ 판정 리포트 생성 실패: '+esc(errMsg(e))+' — 다시 눌러 주세요.</div>';}}
+document.addEventListener('click',ev=>{const t=ev.target.closest&&ev.target.closest('button');if(!t)return;if(t.classList.contains('rptBtn'))makeReport();else if(t.id==='rptPrint')window.print();else if(t.id==='rptSave')saveReport();});
+function saveReport(){const css=[...document.querySelectorAll('style')].map(x=>x.outerHTML).join('');const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>판정 리포트</title>${css}</head><body><section id="reportSec">${$('report').outerHTML}</section></body></html>`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));a.download='판정리포트.html';a.click();}
 
 // ===== 방청객 =====
 // AUDLIB-START (순수 함수: 단위 테스트 대상)
@@ -355,4 +400,5 @@ async function audienceReact(round,panelNames){if(!$('audOn').checked||!audience
   renderPoll();}
  catch(e){box.querySelector('h4').innerHTML=`👥 방청객 반응 · 라운드 ${round} <span class="md">⚠️ ${esc(errMsg(e))}</span>`;}}
 renderPoll();
-</script></body></html>
+</script><section id="reportSec" style="max-width:1100px;margin:24px auto;padding:0 12px 40px"><div class="ctrl noprint"><button class="btn gold rptBtn" type="button">📊 판정 리포트</button><button class="btn alt" id="rptPrint" type="button">🖨️ 인쇄 / PDF 저장</button><button class="btn alt" id="rptSave" type="button">💾 HTML로 저장</button></div><div id="report"></div></section>
+</body></html>
