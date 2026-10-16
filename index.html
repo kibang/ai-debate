@@ -28,7 +28,8 @@ details.think summary{cursor:pointer;color:#a5b4fc;font-size:.78rem}details.thin
 .sp a{color:#93c5fd}.small{font-size:.75rem}
 #status{font-size:.85rem;color:#fbbf24;min-height:1.2em}
 </style></head><body>
-<header><div><h1>🎙️ 라이브 멀티 AI 토론 <small>v4</small></h1><p>사회자(나) + 서로 다른 AI 2~15명 + 방청객 · 일반 토론 / ⚔️ 특기 대결 · Puter.js / Pollinations</p></div>
+<div id="fbBanner" role="status" aria-live="polite" style="display:none;background:#fef3c7;color:#78350f;padding:12px 16px;border-radius:10px;margin:8px;font-size:15px;line-height:1.5"></div><div id="loginOffer" style="display:none;background:#e0f2fe;color:#0c4a6e;padding:12px 16px;border-radius:10px;margin:8px;font-size:15px">Puter 로그인을 하지 않으셨나요? 로그인 없이도 바로 체험할 수 있어요. <button id="noLoginBtn" style="font-size:15px;padding:6px 14px;margin-left:8px;cursor:pointer">로그인 없이 해보기</button></div>
+<header><div><h1>🎙️ 라이브 멀티 AI 토론 <small>v5</small></h1><p>사회자(나) + 서로 다른 AI 2~15명 + 방청객 · 일반 토론 / ⚔️ 특기 대결 · Puter.js / Pollinations</p></div>
 <div id="quota"><b>🔋 남은 발언 기회</b> <span id="qtxt">확인 전</span><div id="qbar"><div id="qfill"></div></div><span id="qsub" class="hdr">Puter 로그인 후 실제 사용량 API로 표시</span> <a href="#" id="qref" style="color:#93c5fd">새로고침</a></div></header>
 <div class="wrap">
 <label>토론 주제</label><input id="topic" value="한국은 원자력 발전 비중을 늘려야 하는가?">
@@ -120,6 +121,17 @@ async function alternates(id){const f=familyOf(id);const out=[];if(f)out.push(..
 $('chk').onclick=async()=>{const live=await loadModels();if(!live){alert('모델 목록을 불러오지 못했습니다');return;}
  const bad=P.map((_,i)=>$('mo'+i).value).filter(m=>!live.has(m));alert(`실시간 목록 ${live.size}개 중 확인.\n`+(bad.length?'❌ 목록에 없음:\n'+bad.join('\n'):'✅ 패널 모델 ID 모두 존재'));};
 
+// ===== v5: 자동 무료 엔진 전환 (POLL_FALLBACK_V5) =====
+const QUOTA_RE=/insufficient.?funds|quota|usage.?limit|limit.?(reached|exceeded)|out of credits|not enough (credit|fund)|payment required|\b402\b|allowance/i;
+const AUTH_RE=/auth|sign.?in|log.?in|popup|unauthori[sz]ed|\b401\b|cancel|closed|denied/i;
+const isQuotaErr=e=>QUOTA_RE.test(errMsg(e)||'');
+const isAuthErr=e=>!isQuotaErr(e)&&AUTH_RE.test(errMsg(e)||'');
+let autoSwitched=false;
+function switchToPoll(reason){const was=$('engine').value==='puter';$('engine').value='poll';$('loginOffer').style.display='none';
+ const b=$('fbBanner');b.textContent=reason==='quota'?'무료 발언 기회를 다 썼어요. 로그인 없는 무료 AI로 이어서 진행해요 (모든 패널이 같은 AI를 사용).':'로그인 없는 무료 AI로 진행해요 (모든 패널이 같은 AI를 사용).';b.style.display='block';
+ if(was)autoSwitched=true;try{refreshQuota();}catch(_){}}
+function offerNoLogin(){if($('engine').value==='puter')$('loginOffer').style.display='block';}
+$('noLoginBtn').onclick=()=>switchToPoll('login');
 // ===== 남은 발언 기회 (puter.auth.getMonthlyUsage) =====
 let lastPct=null,drops=[],lastEst=null;
 async function refreshQuota(){if($('engine').value!=='puter'){$('qtxt').textContent='Pollinations: 공개 한도 정보 없음 (알 수 없음)';$('qfill').style.width='0';$('qsub').textContent='Pollinations는 잔여량 API를 제공하지 않습니다';return;}
@@ -129,6 +141,7 @@ async function refreshQuota(){if($('engine').value!=='puter'){$('qtxt').textCont
   if(!a||!isFinite(rem)||!(tot>0)){$('qtxt').textContent='알 수 없음';$('qsub').textContent='API 응답에 잔여량 정보가 없음';return;}
   // 단위(마이크로센트 등)가 공식 문서에 명시되지 않아 금액($)은 표시하지 않고 비율(%)만 사용
   const pct=Math.max(0,Math.min(100,rem/tot*100));
+  if(rem<=0||pct<0.5){switchToPoll('quota');return;}
   if(lastPct!==null&&lastPct-pct>0.001)drops.push(lastPct-pct);lastPct=pct;
   $('qfill').style.width=pct+'%';$('qfill').style.background=pct>50?'#22c55e':pct>20?'#eab308':'#ef4444';
   const avg=drops.length?drops.reduce((x,y)=>x+y,0)/drops.length:0;
@@ -136,7 +149,7 @@ async function refreshQuota(){if($('engine').value!=='puter'){$('qtxt').textCont
   if(est!==null){if(lastEst!==null&&est>lastEst)est=lastEst;lastEst=est;}
   $('qtxt').textContent=`${pct.toFixed(1)}% 남음`+(est!==null?` · 약 ${est}회 (추정)`:'');
   $('qsub').textContent=avg?`추정: 호출당 평균 ${avg.toFixed(2)}%p 소모 (${drops.length}회 측정 기준)`:'회수 추정은 호출 후 표시 (추정)';}
- catch(e){$('qtxt').textContent='알 수 없음';$('qsub').textContent='사용량 조회 실패: '+(e.message||e.error||'');}}
+ catch(e){if(isQuotaErr(e)){switchToPoll('quota');return;}$('qtxt').textContent='알 수 없음';$('qsub').textContent='사용량 조회 실패: '+(e.message||e.error||'');}}
 $('qref').onclick=e=>{e.preventDefault();refreshQuota();};$('engine').onchange=refreshQuota;setTimeout(refreshQuota,1500);
 
 // ===== 마크다운(안전) / 이름 제거 =====
@@ -169,11 +182,17 @@ function add(cls,av,name,model,color,text){const d=document.createElement('div')
 const isNotFound=e=>/not.?found|no such model|unknown model|invalid model|model.*(does not exist|unavailable|not supported)/i.test(e?.message||e?.error?.message||JSON.stringify(e||''));
 const errMsg=e=>e?.message||e?.error?.message||(typeof e==='string'?e:JSON.stringify(e));
 async function rawAsk(model,messages){
- if($('engine').value==='puter'){const r=await puter.ai.chat(messages,{model});lastRaw=r;
+ if($('engine').value==='puter'){let r;try{r=await puter.ai.chat(messages,{model});}
+  catch(e){if(isQuotaErr(e)){switchToPoll('quota');return pollAsk(messages);}if(isAuthErr(e))offerNoLogin();throw e;}
+  if(r&&(r.success===false||r.error)&&isQuotaErr(r.error||r)){switchToPoll('quota');return pollAsk(messages);}
+  lastRaw=r;
   const c=r?.message?.content;return typeof c==='string'?c:Array.isArray(c)?c.map(x=>x.text||'').join(''):String(r);}
- for(let a=0;a<6;a++){const r=await fetch('https://text.pollinations.ai/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages})});
+ return pollAsk(messages);}
+function plainMsgs(messages){return messages.map(m=>({role:m.role,content:typeof m.content==='string'?m.content:Array.isArray(m.content)?m.content.map(x=>x.text||'').join('\n'):String(m.content)}));}
+async function pollAsk(messages){messages=plainMsgs(messages);
+ for(let a=0;a<6;a++){const r=await fetch('https://text.pollinations.ai/openai?referrer=kibang.github.io',{method:'POST',headers:{'Content-Type':'application/json'},referrerPolicy:'strict-origin-when-cross-origin',body:JSON.stringify({model:'openai',messages,referrer:'kibang.github.io'})});
   if(r.ok){const j=await r.json();return j.choices[0].message.content;}
-  if(r.status===403)throw new Error('HTTP 403 — Pollinations는 파일을 더블클릭(file://)으로 열어야 동작합니다');
+  if(r.status===403)throw new Error('HTTP 403 — 무료 AI가 이 주소에서의 접속을 거부했어요. https://kibang.github.io/ai-debate/ 에서 열어 주세요');
   if(r.status!==402&&r.status!==429)throw new Error('HTTP '+r.status);
   $('status').textContent=`무료 한도 대기 중… (${a+1}/6)`;await new Promise(z=>setTimeout(z,10000+a*5000));}
  throw new Error('무료 사용량 한도 초과 — 잠시 후 다시 시도');}
@@ -195,11 +214,12 @@ async function doSpecial(kind,text,msgEl,color,name){const ex=msgEl.querySelecto
   return {clean:text,shown:'차트 JSON 없음/파싱 실패'};}
  if(kind==='trendimg'){const m=text.match(/IMAGE_PROMPT:\s*(.+)/i);if(!m)return {clean:text,shown:'이미지 프롬프트 없음'};
   const clean=text.replace(m[0],'').trim();const b=document.createElement('div');b.className='sp';b.innerHTML=`<h4>🖼️ 이미지 생성 중… <span class="md">${esc(m[1])}</span></h4>`;ex.appendChild(b);
-  if($('engine').value==='poll'){const img=new Image();img.src='https://image.pollinations.ai/prompt/'+encodeURIComponent(m[1])+'?width=640&height=384&nologo=true';b.querySelector('h4').textContent='🖼️ '+m[1]+' (pollinations)';b.appendChild(img);lastImageUrl=img.src;return {clean,shown:'이미지 생성'};}
+  const pollImg=()=>{const img=new Image();img.alt=m[1];img.src='https://image.pollinations.ai/prompt/'+encodeURIComponent(m[1])+'?width=640&height=384&nologo=true&referrer=kibang.github.io';return img;};
+  if($('engine').value==='poll'){const img=pollImg();b.querySelector('h4').textContent='🖼️ '+m[1]+' (pollinations)';b.appendChild(img);lastImageUrl=img.src;return {clean,shown:'이미지 생성'};}
   const tries=[$('imgModel').value,...IMG_MODELS.filter(x=>x!==$('imgModel').value)].slice(0,3);
   for(const im of tries){try{const img=await puter.ai.txt2img(m[1],{model:im});b.querySelector('h4').innerHTML=`🖼️ ${esc(m[1])} <span class="md">${esc(im)}</span>`;b.appendChild(img);lastImageUrl=img.src;refreshQuota();return {clean,shown:'이미지 생성 성공 ('+im+')'};}
-   catch(e){b.querySelector('h4').innerHTML=`🖼️ ${esc(im)} 실패: ${esc(errMsg(e))} — 다음 모델 시도`;}}
-  refreshQuota();return {clean,shown:'이미지 생성 실패'};}
+   catch(e){b.querySelector('h4').innerHTML=`🖼️ ${esc(im)} 실패: ${esc(errMsg(e))} — 다음 모델 시도`;if(isQuotaErr(e)){switchToPoll('quota');break;}if(isAuthErr(e)){offerNoLogin();break;}}}
+  {const img=pollImg();b.querySelector('h4').textContent='🖼️ '+m[1]+' (pollinations 무료 대체)';b.appendChild(img);lastImageUrl=img.src;refreshQuota();return {clean,shown:'이미지 생성 (Pollinations 대체)'};}}
  const box=(h)=>{const b=document.createElement('div');b.className='sp';b.innerHTML=h;ex.appendChild(b);return b;};
  if(kind==='think'){const m=text.match(/<think>([\s\S]*?)<\/think>/i);const rs=m?m[1]:(lastRaw?.message?.reasoning||lastRaw?.message?.reasoning_content||'');
   const clean=text.replace(/<think>[\s\S]*?(<\/think>|$)/i,'').trim();
